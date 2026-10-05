@@ -1,0 +1,19 @@
+{
+    "id":  "/",
+    "name":  "Levia Agenda",
+    "short_name":  "Levia",
+    "lang":  "pt-BR",
+    "start_url":  "/conta",
+    "scope":  "/",
+    "display":  "standalone",
+    "background_color":  "#F7F3EF",
+    "theme_color":  "#272B35",
+    "icons":  [
+                  {
+                      "src":  "/icon.svg",
+                      "sizes":  "any",
+                      "type":  "image/svg+xml",
+                      "purpose":  "any"
+                  }
+              ]
+}

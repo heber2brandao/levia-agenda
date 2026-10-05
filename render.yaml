@@ -1,0 +1,70 @@
+# Ambiente gratuito de validacao. Nao cria banco, worker ou recursos pagos.
+services:
+  - type: web
+    name: levia-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    dockerCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port 10000 --no-proxy-headers --no-access-log
+    healthCheckPath: /api/v1/ready
+    autoDeployTrigger: "off"
+    envVars:
+      - key: LEVIA_ENVIRONMENT
+        value: production
+      - key: LEVIA_DATABASE_URL
+        sync: false
+      - key: LEVIA_SUPABASE_URL
+        sync: false
+      - key: LEVIA_RATE_LIMIT_SECRET
+        generateValue: true
+      - key: LEVIA_PUBLIC_WEB_URL
+        sync: false
+      - key: LEVIA_CORS_ORIGINS
+        sync: false
+      - key: LEVIA_ALLOWED_HOSTS
+        sync: false
+      - key: LEVIA_EMAIL_ENABLED
+        value: "false"
+      - key: LEVIA_WORKER_OWNER_IDS
+        value: "[]"
+
+  - type: web
+    name: levia-agenda
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: "off"
+    envVars:
+      - key: NODE_VERSION
+        value: "22.14.0"
+      - key: VITE_DEMO_MODE
+        value: "false"
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

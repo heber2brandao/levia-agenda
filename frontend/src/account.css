@@ -1,0 +1,235 @@
+.account-page {
+  max-width: 900px;
+  margin: auto;
+  padding: 28px 20px 60px;
+}
+.account-tabs {
+  margin-bottom: 24px;
+}
+.connected-catalog h3 {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.catalog-suggestions {
+  padding: 18px;
+  background: #f7f3ef;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.catalog-suggestions summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+.catalog-preview {
+  margin-top: 32px;
+}
+.catalog-preview .appearance-preview {
+  margin-top: 20px;
+}
+.catalog-preview .field {
+  width: 100%;
+  max-width: 320px;
+}
+.available-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  justify-content: center;
+}
+.available-slots li {
+  border: 1px solid currentColor;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.account-page > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  font-size: 13px;
+}
+.account-brand {
+  font:
+    36px Georgia,
+    serif;
+}
+.account-brand span {
+  display: block;
+  font:
+    10px "Segoe UI",
+    sans-serif;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+.account-page > [data-slot="card"] {
+  margin-top: 20px;
+}
+.account-page h1 {
+  margin-bottom: 20px;
+}
+.account-page p {
+  margin: 12px 0;
+  line-height: 1.7;
+}
+.account-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.account-fields h2 {
+  margin-top: 8px;
+}
+.auth-form {
+  max-width: 420px;
+}
+.auth-form fieldset {
+  display: grid;
+  gap: 20px;
+}
+.specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.specialties legend {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.specialties label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: #f7f3ef;
+  border-radius: 8px;
+}
+.specialties input {
+  width: 20px;
+  height: 20px;
+  accent-color: #272b35;
+}
+.working-period {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr auto;
+  align-items: end;
+  gap: 12px;
+}
+@media (max-width: 600px) {
+  .working-period {
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e8e2dc;
+  }
+}
+.account-logo {
+  margin: 1rem 0 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+.dashboard-welcome {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+  flex-wrap: wrap;
+}
+.account-dashboard .service-grid {
+  margin-bottom: 1.5rem;
+}
+.business-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.business-fields > .toolbar,
+.business-fields > .service-grid,
+.business-fields > .notice,
+.business-fields > .real-week {
+  margin: 1.5rem 0;
+}
+.real-appointment {
+  border-bottom: 1px solid #e8e2dc;
+  padding: 0.6rem 0 1rem;
+}
+.real-appointment .actions {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.real-appointment .actions a {
+  font-size: 0.85rem;
+  text-decoration: underline;
+  padding: 0.6rem;
+}
+.real-week {
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+}
+.real-week .appointment {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.booking-form {
+  display: grid;
+  gap: 1rem;
+}
+.booking-form form {
+  display: grid;
+  gap: 1rem;
+}
+.public-real {
+  min-height: 100vh;
+  max-width: 850px;
+  margin: auto;
+  padding: clamp(20px, 5vw, 48px);
+  display: grid;
+  gap: 2rem;
+}
+.public-real header {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+.connected-shell .topbar .studio-logo,
+.connected-shell .topbar .studio-mark {
+  width: 38px;
+  height: 38px;
+  font-size: 1rem;
+}
+.empty-state {
+  padding: 2rem 0;
+  color: #67636a;
+}
+@media (max-width: 760px) {
+  .connected-shell .sidebar nav {
+    flex-wrap: wrap;
+  }
+  .connected-shell .topbar {
+    gap: 0.5rem;
+  }
+  .real-appointment .appointment {
+    flex-wrap: wrap;
+  }
+}
+.connected-shell .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1050px) { .connected-shell .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .connected-shell .sidebar nav a { padding: 8px 4px; min-width: 0; font-size: 10px; } .connected-shell .stat strong { font-size: 25px; } }
+.booking-calendar { max-width: 360px; padding: 12px; margin: 16px 0 24px; background: #fff; color: #272b35; border: 1px solid #d9d1ca; border-radius: 16px; }
+.calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0; text-transform: capitalize; }
+.calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; text-align: center; }
+.booking-calendar button { min-height: 44px; min-width: 0; padding: 4px 8px; border-radius: 8px; color: #272b35; background: #f7f3ef; border: 1px solid transparent; cursor: pointer; }
+.booking-calendar button[aria-pressed=true] { background: #272b35; color: white; }
+.booking-calendar button:disabled { opacity: .4; cursor: default; }
+.booking-calendar button:focus-visible { outline: 3px solid #9a746d; outline-offset: 1px; }
+.calendar-days small { padding: 4px 0; }
+.notice-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 0; border-bottom: 1px solid #e8e0da; }
+.notice-row p { margin: 6px 0; }
+.email-status { margin-top: 20px; }
+.email-status summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.notifications-panel { margin-top: 24px; }
