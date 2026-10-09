@@ -8,7 +8,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase";
+import { supabase, finishRecovery, hadAuthCallback, isRecoveringUser } from "@/lib/supabase";
 import {
   ApiError,
   emptyProfile,
@@ -503,8 +503,7 @@ export default function AccountApp() {
     const { data } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       setReady(true);
-      if (event === "PASSWORD_RECOVERY") setRecovering(true);
-      if (!next) setRecovering(false);
+      setRecovering(!!next && (event === "PASSWORD_RECOVERY" || isRecoveringUser(next.user.id)));
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -570,10 +569,15 @@ export default function AccountApp() {
           ) : !ready ? (
             <p role="status">Verificando sessão…</p>
           ) : (
+            <>
+            {hadAuthCallback && !session && (
+              <p role="alert">Não foi possível validar o link. Solicite uma nova recuperação e abra o e-mail no mesmo navegador usado para solicitar.</p>
+            )}
             <Login
               recovering={recovering}
-              onRecovered={() => setRecovering(false)}
+              onRecovered={() => { finishRecovery(); setRecovering(false); }}
             />
+            </>
           )}
         </CardContent>
       </Card>
