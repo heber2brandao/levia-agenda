@@ -204,6 +204,20 @@ def test_shared_rate_counter_is_atomic(database):
     assert sum(results) == 5
 
 
+def test_rate_counter_restores_transaction_mode_for_reused_connection(database):
+    engine = make_engine(database.url.get_secret_value())
+    try:
+        assert consume_limit(engine, "test-secret", str(uuid4()), 5)
+        # With only one checkout so far, this is the same pooled connection.
+        with engine.connect() as connection:
+            assert connection.connection.driver_connection.autocommit is False
+            connection.execute(text("SELECT set_config('levia.user_id', :id, true)"), {"id": str(uuid4())})
+        with engine.connect() as connection:
+            assert not connection.scalar(text("SELECT current_setting('levia.user_id', true)"))
+    finally:
+        engine.dispose()
+
+
 def test_authenticated_response_reports_database_timing_without_identity(database):
     user = uuid4()
     with client_for(database, user) as client:

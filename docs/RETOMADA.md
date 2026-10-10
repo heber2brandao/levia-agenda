@@ -2,6 +2,8 @@
 
 ## Atualizacao: publicacao e recuperacao de senha
 
+- Captura autenticada apos c8e0d29: app 2.30s, auth 0.86ms, db_connect 126.48ms, ip_limit 518.49ms, sql 1.52s, tenant_context 253.65ms, user_limit 510.42ms. Otimizacao direcionada: comando unico do contador executado em autocommit para evitar BEGIN/COMMIT separados. SQLAlchemy restaura modo transacional no pool; teste adicional verifica autocommit desativado e contexto RLS limpo na reutilizacao. Ganho online depende do proximo deploy da API e nova medicao.
+
 - 10/10: implementado Server-Timing (app, auth, ip_limit, user_limit, db_connect, tenant_context, sql). Apenas duracoes, sem SQL/PII. Medidas sobrepostas; ver docs/performance.md. Proximo passo publicar API e colher valores reais antes de novas otimizacoes. Ultimo deploy confirmado antes desta instrumentacao: f24e1ad.
 
 - Backend: medicao quente health 215ms, ready 724ms, perfil publico 2847ms (101KB). pg_stat_statements: perfil medio 2–4ms; contador de limite medio 38ms/max 1983ms. Otimizacao: cinco agregados dashboard em uma consulta; contador e limpeza em um comando SQL (limpeza exclui chave corrente e pula locks). 63 testes backend passaram no PostgreSQL local. API Render tem auto-deploy Off: precisa publicar backend antes de avaliar ganho real; nao confundir deploy automatico frontend com API.

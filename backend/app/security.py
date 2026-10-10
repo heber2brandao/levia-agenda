@@ -10,7 +10,10 @@ from app.timing import measure
 
 def consume_limit(engine, secret: str, identity: str, limit: int) -> bool:
     key = hmac.new(secret.encode(), identity.encode(), hashlib.sha256).hexdigest()
-    with engine.begin() as connection:
+    # The counter and cleanup are ONE atomic PostgreSQL statement. Autocommit
+    # avoids separate BEGIN/COMMIT round trips and releases its row lock sooner.
+    # SQLAlchemy restores the normal isolation mode when returning to the pool.
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:
         count = connection.scalar(
             text("""
             WITH cleanup AS (
