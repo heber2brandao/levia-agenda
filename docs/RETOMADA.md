@@ -2,12 +2,15 @@
 
 ## Atualizacao: publicacao e recuperacao de senha
 
+- Otimizacao de navegacao: Clientes nao busca mais indicadores, catalogo e agendamentos. Agenda nao recalcula indicadores; catalogo so e carregado na Agenda. Dados continuam consultados sem cache compartilhado entre contas. Build validado; teste de regressao verifica ausencia dessas chamadas em Clientes.
+
 - API publicada: https://levia-api.onrender.com — `/api/v1/ready` retornou 200.
 - Frontend publicado: https://levia-agenda-heber.onrender.com — deploy confirmado pelo painel.
 - Rewrite `/*` para `/index.html` salvo. Site URL e redirect `/conta` no Supabase salvos pelo usuario.
 - Correcao de recuperacao: compartilhar somente verificadores PKCE temporarios entre abas; capturar PASSWORD_RECOVERY antes do componente React e preservar a tela ao atualizar.
 - Dois testes Playwright com Supabase simulado passaram (nova aba/reload e link sem verifier). Nao alteram senha real nem enviam e-mail.
 - Proximo passo: publicar a correcao frontend e solicitar NOVO link pelo mesmo navegador. Validar senha e login reais com o usuario.
+- Atualizacao posterior: correcao de nova aba confirmada no bundle publico. Usuario abriu Nova senha. Logs Auth de 09/10 22:10 UTC confirmaram `same_password` (422 em `/user`): senha proposta igual a atual. Mensagem especifica implementada e teste de regressao adicionado. Usuario deve escolher senha diferente; login real ainda pendente.
 - Plano API Free em Ohio, auto-deploy API Off. E-mails de lembretes e worker continuam desativados; e-mails Auth sao separados.
 
 O restante abaixo e historico anterior a publicacao e nao representa o estado atual.

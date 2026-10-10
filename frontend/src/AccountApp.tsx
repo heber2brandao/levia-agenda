@@ -389,9 +389,12 @@ function Login({
         if (error) throw error;
         setPassword("");
       }
-    } catch {
+    } catch (reason) {
+      const code = reason && typeof reason === "object" && "code" in reason ? reason.code : undefined;
       setError(
-        "Não foi possível concluir. Confira os dados, a confirmação de e-mail ou tente novamente mais tarde.",
+        recovering && code === "same_password"
+          ? "A nova senha deve ser diferente da senha atual. Escolha outra senha com pelo menos 12 caracteres."
+          : "Não foi possível concluir. Confira os dados, a confirmação de e-mail ou tente novamente mais tarde.",
       );
     } finally {
       setBusy(false);

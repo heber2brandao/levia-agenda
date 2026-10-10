@@ -16,6 +16,10 @@ test("email opened in another tab reaches new password and survives reload", asy
       expect(createHash("sha256").update(verifier).digest("base64url")).toBe(challenge);
       await route.fulfill({ json: { access_token: "test-token", refresh_token: "test-refresh", token_type: "bearer", expires_in: 3600, user } });
     } else if (req.url().includes("/user")) {
+      if (req.method() === "PUT") {
+        await route.fulfill({ status: 422, headers: { "x-supabase-api-version": "2024-01-01", "access-control-expose-headers": "x-supabase-api-version" }, json: { code: "same_password", msg: "New password should be different from the old password." } });
+        return;
+      }
       await route.fulfill({ json: user });
     } else await route.abort();
   });
@@ -34,6 +38,10 @@ test("email opened in another tab reaches new password and survives reload", asy
   expect(await other.evaluate(() => Object.values(localStorage).some(v => v.includes("test-refresh")))).toBe(false);
   // Supabase broadcasts recovery to other open tabs in the same browser.
   await expect(page.getByRole("heading", { name: "Nova senha" })).toBeVisible();
+  await other.getByLabel("Senha", { exact: true }).fill("test-password-123");
+  await other.getByRole("button", { name: "Salvar nova senha" }).click();
+  await expect(other.getByRole("alert")).toContainText("A nova senha deve ser diferente da senha atual");
+  await expect(other.getByRole("heading", { name: "Nova senha" })).toBeVisible();
 });
 
 test("callback without verifier gives actionable feedback, never a new password form", async ({ page, context }) => {

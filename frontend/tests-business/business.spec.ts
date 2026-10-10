@@ -61,6 +61,11 @@ test("página pública grava reserva e painel recupera agenda, cliente e faturam
   ).toBeVisible();
   await page.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(page.getByText("Confirmado", { exact: true })).toBeVisible();
+  const clientRequests: string[] = [];
+  const trackClientRequests = (request: import("@playwright/test").Request) => {
+    clientRequests.push(new URL(request.url()).pathname);
+  };
+  page.on("request", trackClientRequests);
   await page.getByRole("link", { name: "Clientes", exact: true }).click();
   const card = page
     .locator('[data-slot="card"]')
@@ -71,6 +76,10 @@ test("página pública grava reserva e painel recupera agenda, cliente e faturam
       }),
     });
   await card.getByRole("button", { name: "Ver histórico" }).click();
+  page.off("request", trackClientRequests);
+  expect(clientRequests).not.toContain("/api/v1/me/dashboard");
+  expect(clientRequests).not.toContain("/api/v1/me/appointments");
+  expect(clientRequests).not.toContain("/api/v1/me/services");
   await expect(
     page.getByRole("heading", {
       name: `Histórico de Cliente ${info.project.name}`,

@@ -120,7 +120,7 @@ export default function ProfessionalBusiness({
   const [requestedDay, setDay] = useState(""),
     [weekly, setWeekly] = useState(false),
     [items, setItems] = useState<Appointment[]>([]);
-  const day = requestedDay || summary?.day || "";
+  const day = requestedDay || (profile ? localDay(profile.timezone) : "");
   const [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -150,7 +150,7 @@ export default function ProfessionalBusiness({
     setMoving(null);
     Promise.all([
       profileRequest(token.current, c.signal),
-      loadCatalog(token.current, c.signal),
+      section === "agenda" ? loadCatalog(token.current, c.signal) : Promise.resolve([]),
     ])
       .then(async ([p, s]) => {
         const chosen = requestedDay || localDay(p.timezone);
@@ -165,14 +165,14 @@ export default function ProfessionalBusiness({
         const start =
           section === "finance" ? chosen.slice(0, 7) + "-01" : chosen;
         const [stats, agenda] = await Promise.all([
-          businessRequest<Summary>(
+          section === "dashboard" || section === "finance" ? businessRequest<Summary>(
             `/me/dashboard?day=${chosen}`,
             token.current,
             undefined,
             "GET",
             c.signal,
-          ),
-          loadAppointments(start, end, token.current, c.signal),
+          ) : Promise.resolve(null),
+          section === "clients" ? Promise.resolve({ items: [] }) : loadAppointments(start, end, token.current, c.signal),
         ]);
         if (!c.signal.aborted) {
           setProfile(p);
@@ -257,7 +257,7 @@ export default function ProfessionalBusiness({
     }
   }
   if (loading) return <p role="status">Carregando seu espaço…</p>;
-  if (!profile || !summary)
+  if (!profile || ((section === "dashboard" || section === "finance") && !summary))
     return (
       <section>
         <h1>Seu espaço</h1>
@@ -320,13 +320,13 @@ export default function ProfessionalBusiness({
             </section>
             <div className="stats">
               {[
-                [summary.appointments_today, "Atendimentos no dia"],
-                [money(summary.expected_cents / 100), "Valor previsto no dia"],
+                [summary!.appointments_today, "Atendimentos no dia"],
+                [money(summary!.expected_cents / 100), "Valor previsto no dia"],
                 [
-                  money(summary.completed_month_cents / 100),
+                  money(summary!.completed_month_cents / 100),
                   "Concluídos neste mês",
                 ],
-                [summary.returns_due, "Retornos autorizados em aberto"],
+                [summary!.returns_due, "Retornos autorizados em aberto"],
               ].map(([v, l]) => (
                 <Card key={l}>
                   <CardContent className="stat">
@@ -366,7 +366,7 @@ export default function ProfessionalBusiness({
                   <Bell />
                   <h2>Um convite para voltar</h2>
                   <p>
-                    {summary.returns_due} cliente(s) com retorno sugerido e
+                    {summary!.returns_due} cliente(s) com retorno sugerido e
                     autorização para convites.
                   </p>
                   <p className="muted">
@@ -573,7 +573,7 @@ export default function ProfessionalBusiness({
               <Card>
                 <CardContent className="stat">
                   <span>Atendimentos concluídos no mês</span>
-                  <strong>{money(summary.completed_month_cents / 100)}</strong>
+                  <strong>{money(summary!.completed_month_cents / 100)}</strong>
                   <small>Valores dos serviços na data da reserva</small>
                 </CardContent>
               </Card>
