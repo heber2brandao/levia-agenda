@@ -2,6 +2,8 @@
 
 ## Atualizacao: publicacao e recuperacao de senha
 
+- Segunda otimizacao: perfil/logo reutilizados em memoria por 30s, chaveados pelo token da sessao; edicao de perfil e logo invalidam cache. Testes cobrem expiracao, troca de sessao, copia defensiva, abort e invalidacao. Medicao externa com API ativa: ready 1179ms; /me sem login 863/806ms (401), nao representa tempo do dashboard autenticado. Nao prometer que toda lentidao foi resolvida.
+
 - Otimizacao de navegacao: Clientes nao busca mais indicadores, catalogo e agendamentos. Agenda nao recalcula indicadores; catalogo so e carregado na Agenda. Dados continuam consultados sem cache compartilhado entre contas. Build validado; teste de regressao verifica ausencia dessas chamadas em Clientes.
 
 - API publicada: https://levia-api.onrender.com — `/api/v1/ready` retornou 200.

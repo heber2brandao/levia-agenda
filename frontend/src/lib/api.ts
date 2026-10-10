@@ -36,11 +36,24 @@ export class ApiError extends Error {
     super(message);
   }
 }
+// Short-lived, single-session memory cache. Never persist profile data or tokens.
+let profileCache: { token: string; value: AccountProfile; expires: number } | null = null;
+let profileGeneration = 0;
+function invalidateProfile() {
+  profileCache = null;
+  profileGeneration += 1;
+}
 export async function profileRequest(
   token: string,
   signal: AbortSignal,
   profile?: AccountProfile,
 ): Promise<AccountProfile> {
+  signal.throwIfAborted();
+  if (profile) invalidateProfile();
+  if (!profile && profileCache?.token === token && profileCache.expires > Date.now()) {
+    return structuredClone(profileCache.value);
+  }
+  const generation = profileGeneration;
   const base = (
     import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"
   ).replace(/\/$/, "");
@@ -81,7 +94,11 @@ export async function profileRequest(
       messages[response.status] ?? "Não foi possível salvar seus dados.",
     );
   }
-  return response.json();
+  const value: AccountProfile = await response.json();
+  if (!signal.aborted && generation === profileGeneration) {
+    profileCache = { token, value: structuredClone(value), expires: Date.now() + 30_000 };
+  }
+  return value;
 }
 
 export async function logoRequest(
@@ -89,6 +106,7 @@ export async function logoRequest(
   signal: AbortSignal,
   file?: File,
 ): Promise<{ logo: string | null }> {
+  invalidateProfile();
   const base = (
     import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"
   ).replace(/\/$/, "");
@@ -124,5 +142,6 @@ export async function logoRequest(
         "Não foi possível salvar a logo. Tente novamente.",
     );
   }
+  invalidateProfile();
   return response.json();
 }
