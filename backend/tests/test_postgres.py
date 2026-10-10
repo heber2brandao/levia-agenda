@@ -204,6 +204,19 @@ def test_shared_rate_counter_is_atomic(database):
     assert sum(results) == 5
 
 
+def test_authenticated_response_reports_database_timing_without_identity(database):
+    user = uuid4()
+    with client_for(database, user) as client:
+        client.put("/api/v1/me", json=sample_profile())
+        response = client.get("/api/v1/me", headers={"Origin": "http://localhost:5173"})
+    assert response.status_code == 200
+    timing = response.headers["server-timing"]
+    for metric in ("app", "ip_limit", "user_limit", "db_connect", "tenant_context", "sql"):
+        assert metric + ";dur=" in timing
+    assert str(user) not in timing
+    assert "Server-Timing" in response.headers["access-control-expose-headers"]
+
+
 def test_concurrent_onboarding_does_not_duplicate_profiles(database):
     user = uuid4()
 

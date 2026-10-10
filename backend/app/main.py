@@ -20,6 +20,7 @@ from app.logos import router as logos_router
 from app.notifications import router as notifications_router
 from app.profiles import router
 from app.security import SecurityMiddleware
+from app.timing import TimingMiddleware
 
 
 class HealthResponse(BaseModel):
@@ -60,6 +61,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         else None
     )
     app.add_middleware(SecurityMiddleware, state=app.state, settings=settings)
+    app.add_middleware(TimingMiddleware)
     if settings.environment == "production":
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
     app.add_middleware(
@@ -68,6 +70,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_credentials=False,
         allow_methods=["GET", "PUT", "POST", "DELETE"],
         allow_headers=["Content-Type", "Authorization"],
+        expose_headers=["Server-Timing"],
     )
     app.include_router(router)
     app.include_router(notifications_router)

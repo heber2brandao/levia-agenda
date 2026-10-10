@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
+from app.timing import measure
 
 
 def consume_limit(engine, secret: str, identity: str, limit: int) -> bool:
@@ -59,13 +60,14 @@ class SecurityMiddleware:
         ):
             if self.state.engine is not None:
                 try:
-                    allowed = await run_in_threadpool(
-                        consume_limit,
-                        self.state.engine,
-                        self.settings.rate_limit_secret.get_secret_value(),
-                        "ip:" + (scope.get("client") or ("unknown",))[0],
-                        self.settings.rate_limit_per_minute,
-                    )
+                    with measure("ip_limit"):
+                        allowed = await run_in_threadpool(
+                            consume_limit,
+                            self.state.engine,
+                            self.settings.rate_limit_secret.get_secret_value(),
+                            "ip:" + (scope.get("client") or ("unknown",))[0],
+                            self.settings.rate_limit_per_minute,
+                        )
                 except SQLAlchemyError:
                     return await JSONResponse(
                         {"detail": "Serviço temporariamente indisponível"}, 503

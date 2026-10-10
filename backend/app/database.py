@@ -9,10 +9,11 @@ from sqlalchemy.orm import Session
 
 from app.auth import current_user
 from app.security import consume_limit
+from app.timing import instrument_engine, measure
 
 
 def make_engine(url: str) -> Engine:
-    return create_engine(
+    engine = create_engine(
         url,
         pool_size=5,
         max_overflow=0,
@@ -21,6 +22,8 @@ def make_engine(url: str) -> Engine:
         hide_parameters=True,
         connect_args={"connect_timeout": 5, "prepare_threshold": None},
     )
+    instrument_engine(engine)
+    return engine
 
 
 def check_runtime_role(engine: Engine):
@@ -69,15 +72,20 @@ def tenant_session(
     if engine is None:
         raise HTTPException(503, "Banco de dados ainda não configurado")
     settings = request.app.state.settings
-    if not consume_limit(
-        engine,
-        settings.rate_limit_secret.get_secret_value(),
-        "user:" + str(user),
-        settings.rate_limit_per_minute,
-    ):
+    with measure("user_limit"):
+        allowed = consume_limit(
+            engine,
+            settings.rate_limit_secret.get_secret_value(),
+            "user:" + str(user),
+            settings.rate_limit_per_minute,
+        )
+    if not allowed:
         raise HTTPException(429, "Muitas tentativas", headers={"Retry-After": "60"})
     with Session(engine) as session, session.begin():
-        session.execute(
-            text("SELECT set_config('levia.user_id', :user, true)"), {"user": str(user)}
-        )
+        with measure("db_connect"):
+            session.connection()
+        with measure("tenant_context"):
+            session.execute(
+                text("SELECT set_config('levia.user_id', :user, true)"), {"user": str(user)}
+            )
         yield session

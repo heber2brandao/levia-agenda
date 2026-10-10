@@ -4,6 +4,7 @@ from uuid import UUID
 import jwt
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from app.timing import measure
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -45,7 +46,8 @@ def current_user(
     if verifier is None:
         raise HTTPException(503, "Autenticação ainda não configurada")
     try:
-        return verifier.verify(credentials.credentials)
+        with measure("auth"):
+            return verifier.verify(credentials.credentials)
     except jwt.PyJWKClientConnectionError:
         raise HTTPException(503, "Autenticação temporariamente indisponível") from None
     except (jwt.PyJWTError, ValueError, TypeError, KeyError):
