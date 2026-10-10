@@ -323,17 +323,17 @@ def dashboard(user: User, session: TenantSession, day: date | None = None):
         Occupancy.kind == "appointment",
         Occupancy.cancelled.is_(False),
     ]
-    today = session.scalar(
+    today = (
         select(func.count())
         .select_from(Occupancy)
         .where(*common, Occupancy.starts_at >= low, Occupancy.starts_at < high)
     )
-    predicted = session.scalar(
+    predicted = (
         select(func.coalesce(func.sum(Occupancy.price_cents), 0)).where(
             *common, Occupancy.starts_at >= low, Occupancy.starts_at < high
         )
     )
-    realized = session.scalar(
+    realized = (
         select(func.coalesce(func.sum(Occupancy.price_cents), 0)).where(
             *common,
             Occupancy.status == "completed",
@@ -347,7 +347,7 @@ def dashboard(user: User, session: TenantSession, day: date | None = None):
         .group_by(Occupancy.client_id)
         .subquery()
     )
-    returns = session.scalar(
+    returns = (
         select(func.count())
         .select_from(Occupancy)
         .join(
@@ -357,16 +357,19 @@ def dashboard(user: User, session: TenantSession, day: date | None = None):
         .join(Client, Client.id == Occupancy.client_id)
         .where(Occupancy.return_date <= day, Client.invites_allowed.is_(True))
     )
+    clients = select(func.count()).select_from(Client).where(Client.tenant_id == tenant.id)
+    # One database round trip for the five independent aggregates.
+    stats = session.execute(select(
+        today.scalar_subquery().label("appointments_today"),
+        predicted.scalar_subquery().label("expected_cents"),
+        realized.scalar_subquery().label("completed_month_cents"),
+        returns.scalar_subquery().label("returns_due"),
+        clients.scalar_subquery().label("clients"),
+    )).mappings().one()
     return {
         "day": day,
         "timezone": tenant.timezone,
-        "appointments_today": today,
-        "expected_cents": predicted,
-        "completed_month_cents": realized,
-        "returns_due": returns,
-        "clients": session.scalar(
-            select(func.count()).select_from(Client).where(Client.tenant_id == tenant.id)
-        ),
+        **stats,
     }
 
 

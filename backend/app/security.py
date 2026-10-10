@@ -12,6 +12,14 @@ def consume_limit(engine, secret: str, identity: str, limit: int) -> bool:
     with engine.begin() as connection:
         count = connection.scalar(
             text("""
+            WITH cleanup AS (
+              DELETE FROM levia.rate_limits WHERE key IN (
+                SELECT key FROM levia.rate_limits
+                WHERE key <> :key
+                  AND bucket < floor(extract(epoch FROM clock_timestamp()) / 60) - 60
+                LIMIT 100 FOR UPDATE SKIP LOCKED
+              )
+            )
             INSERT INTO levia.rate_limits AS r (key, bucket, count)
             VALUES (:key, floor(extract(epoch FROM clock_timestamp()) / 60)::bigint, 1)
             ON CONFLICT (key) DO UPDATE SET
@@ -20,14 +28,6 @@ def consume_limit(engine, secret: str, identity: str, limit: int) -> bool:
             RETURNING count
         """),
             {"key": key, "cap": limit + 1},
-        )
-        connection.execute(
-            text("""
-            DELETE FROM levia.rate_limits WHERE key IN (
-              SELECT key FROM levia.rate_limits
-              WHERE bucket < floor(extract(epoch FROM clock_timestamp()) / 60) - 60 LIMIT 100
-            )
-        """)
         )
     return count <= limit
 

@@ -2,6 +2,8 @@
 
 ## Atualizacao: publicacao e recuperacao de senha
 
+- Backend: medicao quente health 215ms, ready 724ms, perfil publico 2847ms (101KB). pg_stat_statements: perfil medio 2–4ms; contador de limite medio 38ms/max 1983ms. Otimizacao: cinco agregados dashboard em uma consulta; contador e limpeza em um comando SQL (limpeza exclui chave corrente e pula locks). 63 testes backend passaram no PostgreSQL local. API Render tem auto-deploy Off: precisa publicar backend antes de avaliar ganho real; nao confundir deploy automatico frontend com API.
+
 - Segunda otimizacao: perfil/logo reutilizados em memoria por 30s, chaveados pelo token da sessao; edicao de perfil e logo invalidam cache. Testes cobrem expiracao, troca de sessao, copia defensiva, abort e invalidacao. Medicao externa com API ativa: ready 1179ms; /me sem login 863/806ms (401), nao representa tempo do dashboard autenticado. Nao prometer que toda lentidao foi resolvida.
 
 - Otimizacao de navegacao: Clientes nao busca mais indicadores, catalogo e agendamentos. Agenda nao recalcula indicadores; catalogo so e carregado na Agenda. Dados continuam consultados sem cache compartilhado entre contas. Build validado; teste de regressao verifica ausencia dessas chamadas em Clientes.
