@@ -178,7 +178,7 @@ export default function BookingForm({
       {(selected.length > 10 || duration > 480) && <p role="alert">Escolha até 10 serviços e 480 minutos por atendimento.</p>}
       {busy && !start && <p role="status">Buscando horários…</p>}
       {slots && (
-        <div className="actions">
+        <div className="actions time-slots">
           {slots.length ? (
             slots.map((s) => (
               <Button
@@ -193,6 +193,7 @@ export default function BookingForm({
                   requestKey.current = crypto.randomUUID();
                 }}
               >
+                {start === s.starts_at && <span aria-hidden="true">✓</span>}
                 {clock(s.starts_at, zone)}
               </Button>
             ))
@@ -203,6 +204,9 @@ export default function BookingForm({
       )}
       {start && (
         <form onSubmit={save}>
+          <p role="status" className="notice">
+            Horário escolhido: <strong>{day.split("-").reverse().join("/")} às {clock(start, zone)}</strong>
+          </p>
           <fieldset disabled={busy}>
             <div className="form-grid">
               <label className="field">

@@ -28,6 +28,15 @@ test("página pública grava reserva e painel recupera agenda, cliente e faturam
     .getByRole("button", { name: "09:00 – 09:45", exact: true })
     .click();
   await page.getByLabel("Nome da cliente").fill(`Cliente ${info.project.name}`);
+  const chosenSlot = page.getByRole("button", { name: "09:00 – 09:45", exact: true });
+  await expect(chosenSlot).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("status")).toContainText(
+    `Horário escolhido: ${day.split("-").reverse().join("/")} às 09:00`,
+  );
+  // Selection must stay visible after focus leaves the time button on mobile.
+  await expect(chosenSlot).toHaveCSS("outline-style", "solid");
+  await expect(chosenSlot).toHaveCSS("outline-width", "2px");
+  await page.screenshot({ path: `test-results/selected-time-${info.project.name}.png`, fullPage: true });
   await page
     .getByLabel("Telefone com DDD")
     .fill(info.project.name === "mobile" ? "65977777777" : "65966666666");
