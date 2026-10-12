@@ -444,20 +444,25 @@ def consent(identifier: UUID, data: ConsentInput, user: User, session: TenantSes
     return {"invites_allowed": client.invites_allowed}
 
 
-def public_session(tenant_id: UUID, request: Request):
+def public_session(tenant_id: str, request: Request):
     if request.app.state.engine is None:
         raise HTTPException(503, "Serviço indisponível")
     with Session(request.app.state.engine) as session, session.begin():
-        session.execute(
-            text("SELECT set_config('levia.public_tenant',:id,true)"), {"id": str(tenant_id)}
-        )
-        tenant = session.scalar(select(Professional).where(Professional.id == tenant_id))
+        try:
+            identifier = UUID(tenant_id)
+        except ValueError:
+            identifier = None
+        session.execute(text("SELECT set_config('levia.public_tenant',:id,true), set_config('levia.public_slug',:slug,true)"),
+                        {"id": str(identifier) if identifier else "", "slug": tenant_id if not identifier else ""})
+        tenant = session.scalar(select(Professional).where(
+            Professional.id == identifier if identifier else Professional.public_slug == tenant_id
+        ))
         if not tenant:
             raise HTTPException(404, "Espaço não encontrado")
         session.execute(
             text("SELECT set_config('levia.user_id',:id,true)"), {"id": str(tenant.owner_id)}
         )
-        session.execute(text("SELECT set_config('levia.public_tenant','',true)"))
+        session.execute(text("SELECT set_config('levia.public_tenant','',true), set_config('levia.public_slug','',true)"))
         if request.method == "POST" and request.url.path.endswith("/appointments"):
             identity = "public-book:" + (request.client.host if request.client else "unknown")
             if not consume_limit(

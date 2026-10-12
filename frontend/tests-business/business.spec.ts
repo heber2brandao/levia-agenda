@@ -7,13 +7,21 @@ test("página pública grava reserva e painel recupera agenda, cliente e faturam
   const setup = await (
     await request.get("http://127.0.0.1:8011/__test/session")
   ).json();
+  const profile = await (await request.get("http://127.0.0.1:8011/api/v1/me", {
+    headers: { Authorization: `Bearer ${setup.session.access_token}` },
+  })).json();
+  const { id, logo, public_slug, ...profileInput } = profile;
+  const savedProfile = await (await request.put("http://127.0.0.1:8011/api/v1/me", {
+    headers: { Authorization: `Bearer ${setup.session.access_token}` }, data: profileInput,
+  })).json();
+  expect(savedProfile.public_slug).toBeTruthy();
   const future = new Date();
   future.setUTCDate(
     future.getUTCDate() + (info.project.name === "mobile" ? 2 : 1),
   );
   const day = future.toISOString().slice(0, 10);
   await page.route("https://auth.levia.test/**", (route) => route.abort());
-  await page.goto(`/agendar/${setup.tenant}`);
+  await page.goto(`/agendar/${savedProfile.public_slug}`);
   await page.getByRole("button", { name: /Manicure E2E/ }).click();
   const calendar = page.getByRole("region", { name: "Escolha a data" });
   while (!(await calendar.getByRole("button", { name: day.split("-").reverse().join("/"), exact: true }).count())) {

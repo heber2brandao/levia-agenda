@@ -5,6 +5,7 @@ export type WorkingPeriod = {
 };
 export type AccountProfile = {
   id?: string;
+  public_slug?: string | null;
   logo: string | null;
   name: string;
   studio_name: string;
@@ -75,7 +76,7 @@ export async function profileRequest(
     },
     body: profile
       ? JSON.stringify(profile, (key, value) =>
-          key === "logo" || key === "id" ? undefined : value,
+          key === "logo" || key === "id" || key === "public_slug" ? undefined : value,
         )
       : undefined,
     signal,

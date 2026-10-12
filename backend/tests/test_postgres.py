@@ -67,7 +67,7 @@ def database():
     os.environ.pop("LEVIA_MIGRATION_DATABASE_URL", None)
 
 
-def client_for(database, user, limit=600):
+def client_for(database, user, limit=600, address="testclient"):
     settings = Settings(
         _env_file=None,
         database_url=database.url,
@@ -76,7 +76,7 @@ def client_for(database, user, limit=600):
     )
     app = create_app(settings)
     app.dependency_overrides[current_user] = lambda: user
-    return TestClient(app)
+    return TestClient(app, client=(address, 50000))
 
 
 def sample_profile(name="Ana"):

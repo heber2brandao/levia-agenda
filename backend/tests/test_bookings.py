@@ -157,6 +157,66 @@ def test_reschedule_blocks_cancellation_and_snapshot(database):
         )
 
 
+@pytest.mark.parametrize("source", ["manual", "public"])
+def test_more_than_four_bookings_keep_distinct_clients(database, source):
+    user = uuid4()
+    with client_for(database, user) as c:
+        tenant, _, data = setup(c)
+        path = (
+            "/api/v1/me/appointments"
+            if source == "manual"
+            else f"/api/v1/public/{tenant}/appointments"
+        )
+        saved = []
+        for index in range(6):
+            payload = {
+                **data,
+                "starts_at": (
+                    datetime.fromisoformat(data["starts_at"]) + timedelta(hours=index)
+                ).isoformat(),
+                "name": f"Cliente {index + 1}",
+                "phone": f"6599999999{index}",
+                "request_key": str(uuid4()),
+            }
+            # Independent public visitors; keep the real per-IP quota enabled.
+            with client_for(database, user, address=f"192.0.2.{index + 1}") as visitor:
+                response = visitor.post(path, json=payload)
+            assert response.status_code == 201, response.text
+            saved.append(response.json()["id"])
+        listing = c.get(
+            "/api/v1/me/appointments", params={"start": data["day"], "end": data["day"]}
+        ).json()["items"]
+        assert [item["id"] for item in listing] == saved
+        assert [item["client_name"] for item in listing] == [
+            f"Cliente {index + 1}" for index in range(6)
+        ]
+        assert len({item["client_id"] for item in listing}) == 6
+        assert c.get("/api/v1/me/clients").json()["total"] == 6
+
+
+def test_public_reused_phone_saves_new_booking_under_existing_client(database):
+    with client_for(database, uuid4(), address="192.0.2.100") as c:
+        tenant, _, data = setup(c)
+        path = f"/api/v1/public/{tenant}/appointments"
+        first = c.post(path, json=data)
+        second = c.post(path, json={
+            **data,
+            "starts_at": (
+                datetime.fromisoformat(data["starts_at"]) + timedelta(hours=1)
+            ).isoformat(),
+            "name": "Outro nome no mesmo telefone",
+            "request_key": str(uuid4()),
+        })
+        assert first.status_code == second.status_code == 201
+        assert first.json()["id"] != second.json()["id"]
+        items = c.get(
+            "/api/v1/me/appointments", params={"start": data["day"], "end": data["day"]}
+        ).json()["items"]
+        assert len(items) == 2
+        assert items[0]["client_id"] == items[1]["client_id"]
+        assert [item["client_name"] for item in items] == [data["name"], data["name"]]
+
+
 def test_concurrent_booking_wins_only_once(database):
     user = uuid4()
     with client_for(database, user) as c:

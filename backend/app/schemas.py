@@ -59,4 +59,5 @@ class ProfileInput(BaseModel):
 
 class ProfileOutput(ProfileInput):
     id: UUID
+    public_slug: str | None = None
     logo: str | None = None

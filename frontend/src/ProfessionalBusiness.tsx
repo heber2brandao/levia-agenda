@@ -284,7 +284,7 @@ export default function ProfessionalBusiness({
           </h1>
         </div>
         <Button asChild variant="outline">
-          <Link to={`/agendar/${profile.id}`}>
+          <Link to={`/agendar/${profile.public_slug || profile.id}`}>
             Ver página pública <ArrowUpRight size={16} />
           </Link>
         </Button>

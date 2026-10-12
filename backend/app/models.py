@@ -37,6 +37,7 @@ class Professional(Base):
     owner_id: Mapped[UUID] = mapped_column(unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100))
     studio_name: Mapped[str] = mapped_column(String(100))
+    public_slug: Mapped[str | None] = mapped_column(String(100), unique=True)
     phone: Mapped[str] = mapped_column(String(20))
     email: Mapped[str | None] = mapped_column(String(254))
     specialties: Mapped[list[str]] = mapped_column(JSONB, default=list)

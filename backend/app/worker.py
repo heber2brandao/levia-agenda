@@ -113,7 +113,7 @@ def claim(engine, owner, settings, now):
                     tenant.id, item.client_id, settings.email_unsubscribe_secret.get_secret_value()
                 )
                 body += (
-                    "\n\nAgendar: " + settings.public_web_url.rstrip("/") + f"/agendar/{tenant.id}"
+                    "\n\nAgendar: " + settings.public_web_url.rstrip("/") + f"/agendar/{tenant.public_slug or tenant.id}"
                 )
                 body += (
                     "\nNão receber mais convites: "

@@ -108,6 +108,24 @@ function ProfileForm({ session }: { session: Session }) {
   ];
   return (
     <form onSubmit={save}>
+      {profile.id && (
+        <section className="notice" aria-label="Link de agendamento">
+          <label className="field">
+            Seu link de agendamento
+            <Input readOnly value={`${window.location.origin}/agendar/${profile.public_slug || profile.id}`}
+              onFocus={(event) => event.currentTarget.select()} />
+          </label>
+          <p>Compartilhe este link com suas clientes. Ele permanece igual ao editar o nome do espaço.</p>
+          <Button type="button" variant="outline" onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(`${window.location.origin}/agendar/${profile.public_slug || profile.id}`);
+              setMessage("Link copiado.");
+            } catch {
+              setMessage("Selecione o endereço acima e copie o link.");
+            }
+          }}>Copiar link</Button>
+        </section>
+      )}
       <fieldset disabled={saving || logoBusy} className="account-fields">
         <div className="form-grid">
           <label className="field">
