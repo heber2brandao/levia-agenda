@@ -219,7 +219,7 @@ export default function BookingForm({
                   name="phone"
                   type="tel"
                   required
-                  pattern="[0-9 ()+\-]{10,22}"
+                  pattern="[0-9 \(\)\+\-]{10,22}"
                 />
               </label>
               <label className="field">

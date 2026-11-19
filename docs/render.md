@@ -1,7 +1,8 @@
 # Publicacao gratuita de validacao no Render
 
-Status em 05/10/2026: conta Render acessivel; conexao GitHub aguardando verificacao
-do usuario. Nenhum servico criado ou publicado por este procedimento ainda.
+Status em 09/10/2026: GitHub conectado e codigo enviado ao repositorio privado.
+Formulario da API preparado, mas nenhuma publicacao foi confirmada. Ponto exato
+de retomada e bloqueio atual em [RETOMADA.md](RETOMADA.md).
 
 `render.yaml` prepara uma API Docker Free e um site estatico, com deploys
 automaticos desligados. Nao cria PostgreSQL Render, disco, cron ou worker.
